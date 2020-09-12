@@ -1,0 +1,12 @@
+# ignores of all node modules
+node_modules
+
+# ignores all visual studio code files
+\.vscode
+*.vscode
+
+# ignores jsons
+*.json
+
+# ignores bin files
+\bin
