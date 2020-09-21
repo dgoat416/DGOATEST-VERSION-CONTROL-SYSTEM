@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+    <head>
+        <title>This is an HTML canvas</title>
+        <link rel="stylesheet" href="../assets/styles.css">
+    </head>
+    <body>
+        <h1>Project 1: Create A Repo</h1>
+        <h4>Semester: Fall 2020</h4>
+        
+            <form action ="/get_form_text" method = "GET">
+                <input type = "text" id = "box_1" cols = "55"
+                    name = "my_input_box_text" required />
+                <input type = "submit" value = "Click me to run command :)" /> 
+            </form> 
+        <canvas id="grid" width="500" height="400"></canvas> <!--square-->
+    </body>
+
+    <script type = "text/javacsctipt" 
+            src="../assets/draw-stuff.js"></script>
+  
+    <script>//loose javascript 
+        // after "Introducing JavaScript Game Development" by Stuart.
+    
+        // =====================================================  draw_title ====
+        // Draw filled rect.
+        function draw_title( context ) 
+        {
+            context.save( );
+            context.fillStyle = 'lightgrey';
+            context.font = "30px Arial";
+            context.fillText( "Grid", 150, 140 );
+            context.restore( );
+        }
+        // =====================================================  Main ====
+        var canvas = document.getElementById( "grid" );
+        var context = canvas.getContext( "2d" );
+        draw_rect( context );
+        // Draw a grid
+        draw_grid( context, 10, 50, 'white', 'yellow' );
+        draw_title( context );
+    
+    </script>
+</html>
+    
