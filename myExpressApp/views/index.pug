@@ -10,7 +10,18 @@ extends layout
 
 block content
   h1 #{title}
-  ul
-    each article, i in articles
-      li= article.title
+  p Click on the button corresponding to the command you want to execute
+  form(name="input-screen", action="/get-form-text" method="GET")
+    radio 
+      input(type="radio", name="command_filter", value="", checked=true, required=true)
+      | CREATE REPOSITORY FOR   
+      input(type="text", name="currProjectDir", value="", checked=true, required=true)
+      |   STORE   
+      input(type="text", name="newRepoDir", value="", checked=true, required=true) 
+      |      
+      input(type="submit", name="submit", value="Submit")
+      
+  //- ul
+  //-   each article, i in articles
+  //-     li= article.title
   
