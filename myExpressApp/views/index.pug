@@ -1,0 +1,16 @@
+//- extends layout
+
+//- block content
+//-   h1 Project 1: Create A Repo
+//-   h4 Semester: Fall 2020
+//-   //- p Welcome to #{title}
+
+//-   form action="/get_form_text" method= "GET"
+extends layout
+
+block content
+  h1 #{title}
+  ul
+    each article, i in articles
+      li= article.title
+  
