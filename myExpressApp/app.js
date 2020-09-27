@@ -96,98 +96,9 @@ Method to take a snapshot of a directory
 */
 function snapshot(source, dest, callback)
 {
-
+  // get all files (recursively), make copies and store in dest
   var allFiles = getFiles(source);
   copyFiles(source, dest, allFiles);
-
-//   // import recursive-copy package
-//   // var copy = require('recursive-copy');
-//   if (source[source.length - 1] != "\\")
-//     source += "\\";
-
-//  var fileList = [];
-//  var dir = [];
-// //  files.push(fs.readdirSync(source));
-// //  //files.push(fs.readFileSync(source));
-// //  console.log(files);
-// // List all files in a directory in Node.js recursively in a synchronous fashion
-
-// // get all files (or folders) from directory
-// fileList = fs.readdirSync(source);
-
-// // loop through the folder and find the directories 
-// for (var i = 0; i < fileList.length; i++)
-// {
-//   // is directory?
-//   if(fs.statSync(path.join(source, fileList[i])).isDirectory())
-//   {
-//     // add to directory list and get every file in the directory
-//     // dir.push(fileList[i]);
-
-//     // remove the directory element
-//     if (dir.length == 0)
-//       dir = fileList.splice(i, 1);
-//     else
-//       dir = dir.concat(fileList.splice(i, 1));
-
-//     // account for change in size
-//     if (i > 0)
-//       i -= 1;
-
-//   //   // add all the extra files from dir
-//   //  fileList = fileList.concat(snapshot(path.join(source, dir[0]), dest));
-    
-//   //   // remove from directory
-//   //   dir = [];
-
-//     // // break the loop
-//     // break;
-//   }
-// }
-
-//   // add all the extra files from dir
-//   for (var i = 0; i < dir.length; i++)
-//     fileList = fileList.concat(snapshot(path.join(source, dir[i]), dest));
-
-// return fileList;
-//   // var path = path || require('path');
-//   // var fs = fs || require('fs'),
-//       // files = fs.readdirSync(dir);
-//   // filelist = filelist || [];
-//   // files.forEach(function(file) {
-//   //   if (fs.statSync(path.join(dir, file)).isDirectory()) {
-//   //     filelist.push(snapshot(path.join(dir, file), filelist));
-//   //   }
-//   //   else {
-//   //     filelist.push(files);
-//   //   }
-//   // });
-//   // return filelist;
-
-// // console.log(filelist);
-
-
-
-//   //while
-
-
-
-//   //perform a copy of the source directory
-//   // copy(source, destination, callback)
-// //  var created_ =  copy(source, dest, function(error, results) {
-// //       if (error) {
-// //           console.error('Copy failed: ' + error);
-// //           return callback(false);
-// //       } else {
-// //           console.log(results);
-// //           console.info('Copied ' + results.length - 1 + ' files');
-// //           return callback(true);
-// //       }
-// //   });
-
-// //   return created_
-
-//  //return true;
 }
 
 
@@ -210,34 +121,38 @@ function getFiles(source)
   if (source[source.length - 1] != "\\")
     source += "\\";
 
-// get all files (or embedded directories) from source directory
-fileList = fs.readdirSync(source);
+  // get all files (or embedded directories) from source directory
+  fileList = fs.readdirSync(source);
 
-// loop through the new files/embedded directories list and find all the directories 
-for (var i = 0; i < fileList.length; i++)
-{
-  // is directory?
-  if(fs.statSync(path.join(source, fileList[i])).isDirectory())
+  // loop through the new files/embedded directories list and find all the directories 
+  for (var i = 0; i < fileList.length; i++)
   {
-    // remove the directory element 
-    // takes into account the special rules for splice function
-    // and rules for adding based off the size of the array
-    if (dir.length == 0)
-      dir = fileList.splice(i, 1);
-    else
-      dir = dir.concat(fileList.splice(i, 1));
+    // convert files list to full path 
+    fileList[i] = path.join(source, fileList[i]);
+    
+    // is directory?
+    if(fs.statSync(fileList[i]).isDirectory())
+    {
+      // remove the directory element 
+      // takes into account the special rules for splice function
+      // and rules for adding based off the size of the array
+      if (dir.length == 0)
+        dir = fileList.splice(i, 1);
+      else
+        dir = dir.concat(fileList.splice(i, 1));
 
-    // account for change in size of the files list above
-    if (i > 0)
-      i -= 1;
+      // account for change in size of the files list above
+      if (i > 0)
+        i -= 1;
+    }
   }
-}
 
   // add all the extra files from dir
   for (var i = 0; i < dir.length; i++)
-    fileList = fileList.concat(getFiles(path.join(source, dir[i])));
+    // fileList = fileList.concat(getFiles(path.join(source, dir[i])));
+    fileList = fileList.concat(getFiles(dir[i]));
 
-  
+  // return all the files
   return fileList;  
 }
 
@@ -267,7 +182,7 @@ function copyFiles(source, dest, listOfFiles)
   for (var i = 0; i < listOfFiles.length; i++)
   {
       try {
-      fs.copyFileSync(path.join(source, listOfFiles[i]), path.join(dest, listOfFiles[i]));
+      fs.copyFileSync(listOfFiles[i], path.join(dest, path.basename(listOfFiles[i])));
     } catch(err) {
       console.log("Failed the copy and move of " + listOfFiles[i] + " !");
       throw err;
@@ -279,13 +194,6 @@ var currPath = 'C:\\Users\\HP\\Documents\\Current Classes\\PSY 150';//'C:\\Users
 var repoPath = 'C:\\Users\\HP\\Documents\\Repos\\TEAMDJ';
 
 //create the repository  
-// var allFiles = getFiles(currPath);
-
-// for (i = 0; i < allFiles.length; i++)
-// {
-//   console.log(allFiles[i]);
-// }
-
 snapshot(currPath, repoPath);
 console.log("WORKS!");
 
