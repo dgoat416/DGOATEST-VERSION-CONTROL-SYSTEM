@@ -94,19 +94,17 @@ const app = express();
 Method to take a snapshot of a directory
 @param source = source directory to copy from
 @param dest   = destination directory to copy source to
-@param callback = callback method
 */
-function snapshot(source, dest, callback)
+function snapshot(source, dest)
 {
   // get all files (recursively), make copies and store in dest
   var allFiles = getFiles(source);
   copyFiles(source, dest, allFiles);
 
-  // create manifest file
-  var manifestFileName = ".man-1.rc"; 
+  // create manifest file based on how many we already have
+  var manifestNum = glob.sync(path.join(dest, '.man-*.rc')).length + 1;
+  var manifestFileName = `.man-${manifestNum}.rc`; 
   var manifestPath = path.join(dest, manifestFileName);
-  if (glob.sync(manifestPath).length == 0)
-      fs.openSync(manifestPath, 'w');
     
   // populate manifest file  
   populateManifest(source, dest, allFiles, manifestPath);
@@ -347,6 +345,7 @@ var repoPath = 'C:\\Users\\HP\\Documents\\Repos\\TEAMDJ';
 
 //create the repository  
 snapshot(currPath, repoPath);
+
 // console.log("WORKS!");
 
 // console.log((new Date()).toISOString().slice(0, 19).replace("T", " "));
