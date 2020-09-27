@@ -10,7 +10,7 @@ extends layout
 
 block content
   h1 #{title}
-  Img:srcset= "C:\\Users\\HP\\Pictures\\DGOAT LOGO.png"
+  //- Img:srcset= "C:\\Users\\HP\\Pictures\\DGOAT LOGO.png"
   p Click on the button corresponding to the command you want to execute
   form(name="input-screen", action="/get-form-text" method="GET")
     radio 
@@ -21,7 +21,7 @@ block content
       input(type="text", name="newRepoDir", value="", checked=true, required=true) 
       |      
       input(type="submit", name="submit", value="Submit")
-      
+
   //- ul
   //-   each article, i in articles
   //-     li= article.title

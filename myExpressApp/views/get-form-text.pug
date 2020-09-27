@@ -1,5 +1,8 @@
 extends layout
 
 block content
-    h5 Created Repo!
+    h1 Repository Status...
+        form(name="output-screen", action="/" method="HEAD")
+            p #{output}
+            input(type="submit", name="Submit", value="Done")
     
