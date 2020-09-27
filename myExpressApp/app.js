@@ -3,6 +3,7 @@
 const path = require('path');
 const express = require('express');
 const fs = require('fs');
+const glob = require('glob');
 const { getegid } = require('process');
 
 // Init an Express object
@@ -100,15 +101,28 @@ function snapshot(source, dest, callback)
   // get all files (recursively), make copies and store in dest
   var allFiles = getFiles(source);
   copyFiles(source, dest, allFiles);
+
+  // create manifest file
+  var manifestFileName = ".man-1.rc"; 
+  var manifestPath = path.join(dest, manifestFileName);
+  if (glob.sync(manifestPath).length == 0)
+      fs.openSync(manifestPath, 'w');
+    
+  // populate manifest file  
+  populateManifest(source, dest, allFiles, manifestPath);
+
+  // copy the manifest created in dest to source
+  fs.copyFileSync(manifestPath, path.join(source, manifestFileName));
+
 }
 
 
 /**
  * Method to get all the files from a directory
  * recursively
- * @param source = source directory to copy from 
+ * @param source source directory to copy from 
  * @return 
- *        = a list of all files throught all possible paths of the directory
+ *        a list the fullpath of all files in all possible paths of the source directory
  */
 function getFiles(source)
 {
@@ -161,9 +175,9 @@ function getFiles(source)
 /**
  * Method to copy all the files from listOfFiles
  * and put in a new directory
- * @param source = source directory to copy from
- * @param dest   = destination directory to copy source to
- * @param listOfFiles = array of file names (and their extensions)
+ * @param source source directory to copy from
+ * @param dest destination directory to copy source to
+ * @param listOfFiles array of file names (and their extensions)
  */
 function copyFiles(source, dest, listOfFiles)
 {
@@ -196,11 +210,12 @@ function copyFiles(source, dest, listOfFiles)
 /**
  * Method to ignore files in a list
  * by deleting them from the list
- * @param listOfFiles = list of files to delete from
+ * @param listOfFiles list of files to delete from
  * *** possibly add a ignoreFilesList to make it more robust
  * (which would require creating a binary search tree for all the files
  * and searching through the binary search tree and once I find it 
- * delete it from the tree) ***
+ * delete it from the tree) 
+ * OR USE GLOB.sync {ignore: files to ignore}
  */
 function ignoreFiles(listOfFiles)
 {
@@ -223,12 +238,13 @@ function ignoreFiles(listOfFiles)
  * Ex. stringInput = "HELLO WORLD" results in the checksum:
  * 4086 = 1*H +3*E +7 *L +11*L + 1*O +3*' ' 
  *        + 7*W + 11*O + 1*R + 3*L +7*D
- * @param {string} stringInput 
+ * @param {string} stringInput input to generate a checksum for
  */
 function multiplier(stringInput){
 
   var sum = 0;
   var multiplier = 1;
+
   for(i = 0; i < stringInput.length; i++){
     switch (multiplier)
     {
@@ -243,7 +259,85 @@ function multiplier(stringInput){
     }
   }   
 
-  return sum;
+  return sum % 10000;
+}
+
+
+/**
+ * Method to create an Artifact ID to uniquely identify the file
+ * based on it's path, name, and content
+ * @param {string} absolutePath absolute path of the file to create artId for 
+ * @param {}       source source directory of the project that has been copied
+ *                          needed to get the relative path
+ *  @returns 
+ *            an Artifact ID of the form "Pa-Lb-Cc" + "<original file extension"
+ *            a = checksum of file contents created by multiplying each char in a 
+ *                loop by 1, 3, 7, 11 (each char only multiplied by one of these numbers)
+ *            b = number of bytes (characters) of the file contents
+ *            c = checksum of relative path of the file
+ *            Ex. of <original file extension> = ".txt" or ".pdf"
+ */
+function convertToArtID(source, absolutePath){
+
+  // get the contents of the file
+  var fileContents = fs.readFileSync(absolutePath,
+                                    {encoding: 'utf8', flag: 'r'}); 
+  
+  // represents a in the Artifact ID format (see method docs)
+  var a = multiplier(fileContents);
+  
+  // represents b in the Artifact ID format (length of fileContents)
+  var b = fileContents.length % 10000;
+  
+  // represents c in the Artifact ID format (see method docs)
+	var c = multiplier(path.relative(source, absolutePath));
+
+  // get the original file extension
+  var fileExt = path.extname(absolutePath);
+  
+  // get the new path name created from the above operations
+  var newPathName = ('P' + a + '-L' + b + '-C' + c + fileExt);
+  
+  // store copy directory
+  var copyDir = path.join(source, path.basename(absolutePath));
+  
+  // copy file to its new destination and rename it file 
+  fs.copyFileSync(absolutePath, copyDir);
+  fs.renameSync(copyDir, path.join(source, newPathName));
+  
+  return newPathName;
+}
+
+/**
+ * Method to populate the manifest file in this format:
+ * create C:\\projs\\mypt\ C:\\repo\\p1  | <command source dest>
+ * 2020-09-08 11:27:46                   | <date-time object>
+ * P4086-L11-C3201.txt @ bot\\a\\b\\     | <ArtId named file in dest> 
+ * ^^^^ (need one of these for each file in dest) ^^^^
+ * In the future bring in the command from the input screen on website as param
+ * @param {string} source original input of project home (fullpath)
+ * @param {string} dest where the repo was created (fullpath)
+ * @param {}       allFiles a list of fullpath strings pointing to the files in source
+ * @param {string} manifestPath fullpath to the manifest file
+ */
+function populateManifest(source, dest, allFiles, manifestPath)
+{
+  // keeps track of position in allFiles
+  var j = 0;
+
+  for (var i = 0; i < 2 + allFiles.length; i++)
+  // if file doesn't exist create it and write message to file
+    switch(i)
+  {
+    case 0: fs.writeFileSync(manifestPath, `create ${source} ${dest}\n`); break;
+    case 1: fs.appendFileSync(manifestPath, (new Date()).toISOString().slice(0, 19).replace("T", " ")+ "\n"); break;
+    default: 
+          {
+            let dest_file = convertToArtID(dest, allFiles[j]);
+            fs.appendFileSync(manifestPath, dest_file + " @ " + path.relative(source, allFiles[j]) + "\n");
+            j++;
+          }
+  } 
 }
 
 
@@ -253,7 +347,27 @@ var repoPath = 'C:\\Users\\HP\\Documents\\Repos\\TEAMDJ';
 
 //create the repository  
 snapshot(currPath, repoPath);
-console.log("WORKS!");
+// console.log("WORKS!");
+
+// console.log((new Date()).toISOString().slice(0, 19).replace("T", " "));
+
+ // create manifest file 
+//  var created = false;
+//  var x = glob.sync(currPath + "\\" + ".man-*.rc");
+//  while (!created)
+//  if (x.length == 0)
+//     {
+//       fs.openSync(currPath + "\\" + ".man-1.rc", 'w')
+//     console.log("need to create!");
+//     console.log("now created! " + x);
+//     }
+
+//   else
+//    { 
+    //  console.log(x);
+//    }
+
+    
 
 //// testing ignoring dot files
 //console.log(getFiles('C:\\Users\\HP\\Documents\\DGOAT WEBSITE'));
