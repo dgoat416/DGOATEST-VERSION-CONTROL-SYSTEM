@@ -24,7 +24,7 @@ Create a repository for the given project source tree (including a
 </ul> 
 
 # Setup and Installation 
-<ul> Enter all the commands into your terminal that you will be running this project through
+<ul> Enter all the commands into your terminal that you will be running this project through:
   <li> Download pug (formally Jade): npm install pug </li>
   <li> Download path: npm install path               </li>
   <li> Download express: npm install express         </li>
