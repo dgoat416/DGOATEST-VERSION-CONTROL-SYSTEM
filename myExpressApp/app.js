@@ -3,6 +3,7 @@
  * using JavaScript (Node w/Express), HTML (Jade/Pug), CSS
  * 
  * Author: Deron Washington II
+ * Email : Deron.Washington@student.csulb.edu
  * Last Edit Date: 9/27/20
  * Version: v.1.0.0 released 9/27/20
  * 
