@@ -1,95 +1,80 @@
-// File: app.js
-// Load the Express builder functions
+/**
+ * Purpose: Create a Version Control System on the web
+ * using JavaScript (Node w/Express), HTML (Jade/Pug), CSS
+ * 
+ * Author: Deron Washington II
+ * Last Edit Date: 9/27/20
+ * Version: v.1.0.0 released 9/27/20
+ * 
+ */
+// Load the project requirements
 const path = require('path');
 const express = require('express');
 const fs = require('fs');
 const glob = require('glob');
-const { getegid } = require('process');
 
 // Init an Express object
 const app = express();
 
-// //Load View Engine 
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'pug');
+//Load View Engine 
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
 
-// // Set page-gen fcn for URL root request
-// app.get('/', function (request, response) 
-// { 
-//    return response.render('index', {
-//       title: 'TeamDJ Version Control System (v1.0.0)'
-//     });
-// });
-
-
-// // app.get('/submit-repo-info', function(request, response){
-
-// // // navigate to a new page
-// // response.render('submit-repo-info', {
-// //   result: 'Your repository has been created from ' + currentProjectDir + ' and stored '
-// //   + newRepositoryDir + ' and named ' + 'myFirstRepo'
-// // });
-// // });
+// Set page-gen fcn for URL root request
+app.get('/', function (request, response) 
+{ 
+   return response.render('index', {
+      title: 'TeamDJ Version Control System (v1.0.0)'
+    });
+});
 
 
-// // app.use(express.static('/'));
-// // handle a client side action request
-// var output_msg = "YOOO";
+// handle a client side action request
+app.get('/get-form-text', function(request, response){
+  // variable declaration for displaying output
+  var output_msg = "YOOO";
+  var created = false;
 
-// app.get('/get-form-text', function(request, response){
-//     // gives me the current project directory to take snapshot from
-//     var currentProjectDir = request.query.currProjectDir;
+    // gives me the current project directory to take snapshot from
+    var currentProjectDir = request.query.currProjectDir;
   
-//     // gives me the directory where the repository will be stored
-//     var newRepositoryDir = request.query.newRepoDir;
+    // gives me the directory where the repository will be stored
+    var newRepositoryDir = request.query.newRepoDir;
   
-//     // output our text to the console
-//     console.log('app.js received = ' + currentProjectDir + ' for ' + newRepositoryDir);
+    // output our text to the console
+    console.log('app.js received = ' + currentProjectDir + ' for ' + newRepositoryDir);
     
-//     // send our text back to the client side within this form
-//     // response.send('Your repository has been created from ' + currentProjectDir + ' and stored '
-//     // + newRepositoryDir + ' and named ' + 'myFirstRepo');
+    // PERFORM DATA VALIDATION HERE -----------------------
     
-    
+    // create the repository  
+    created = snapshot(currentProjectDir, newRepositoryDir);
   
-//     // create the repository  
-//     created = snapshot(currentProjectDir, newRepositoryDir);
+    if (created == true)
+    {
+      output_msg = 'Your repository has been created or updated from ' + currentProjectDir + ' and stored here:'
+       + newRepositoryDir;
+    }
+    else
+      output_msg = "The repository couldn't be created. This is most likely because it already exists at this repo.";
   
-//     if (created == true)
-//     {
-//       output_msg = 'Your repository has been created from ' + currentProjectDir + ' and stored '
-//        + newRepositoryDir + ' and named ' + 'myFirstRepo';
-//     }
-//     else
-//       output_msg = "The repository couldn't be created. This is most likely because it already exists at this repo.";
-  
-//     console.log(output_msg);
+    console.log(output_msg);
 
-//   response.render('get-form-text', {
-//   output: output_msg
-// });
+  response.render('get-form-text', {
+  output: output_msg
+});
 
-// });
+});
 
 
-// // Start Server
-// app.listen(3000, function (req, res) 
-// { 
-//   console.log('app.js listening on port 3000!');
-// }); // https://discord.com/channels/738205874929270815/738205874929270818/756227895478845556 
+// Start Server
+app.listen(3000, function (req, res) 
+{ 
+  console.log('app.js listening on port 3000!');
+}); // https://discord.com/channels/738205874929270815/738205874929270818/756227895478845556 
 
 
 
-
-
-
-
-
-
-
-
-
-
+// SERVER SIDE METHODS ------------------------------------------------------------------------------------------------------------
 /** 
 Method to take a snapshot of a directory
 @param source = source directory to copy from
@@ -112,6 +97,7 @@ function snapshot(source, dest)
   // copy the manifest created in dest to source
   fs.copyFileSync(manifestPath, path.join(source, manifestFileName));
 
+  return true;
 }
 
 
@@ -156,7 +142,7 @@ function getFiles(source)
         dir = dir.concat(fileList.splice(i, 1));
 
       // account for change in size of the files list above
-      if (i > 0)
+      if (i >= 0)
         i -= 1;
     }
   }
@@ -323,12 +309,15 @@ function populateManifest(source, dest, allFiles, manifestPath)
   // keeps track of position in allFiles
   var j = 0;
 
+  // get timezone offset in milliseconds
+  var date = new Date(); 
+
   for (var i = 0; i < 2 + allFiles.length; i++)
   // if file doesn't exist create it and write message to file
     switch(i)
   {
     case 0: fs.writeFileSync(manifestPath, `create ${source} ${dest}\n`); break;
-    case 1: fs.appendFileSync(manifestPath, (new Date()).toISOString().slice(0, 19).replace("T", " ")+ "\n"); break;
+    case 1: fs.appendFileSync(manifestPath, (new Date(date.getTime() - (date.getTimezoneOffset() * 60000))).toISOString().slice(0, 19).replace("T", " ")+ "\n"); break;
     default: 
           {
             let dest_file = convertToArtID(dest, allFiles[j]);
@@ -337,38 +326,3 @@ function populateManifest(source, dest, allFiles, manifestPath)
           }
   } 
 }
-
-
-
-var currPath = 'C:\\Users\\HP\\Documents\\Current Classes\\PSY 150';//'C:\\Users\\HP\\Documents\\Current Classes\\CECS 343\\Project 1' //'C:\\Users\\HP\\Documents\\JS Test Folder';
-var repoPath = 'C:\\Users\\HP\\Documents\\Repos\\TEAMDJ';
-
-//create the repository  
-snapshot(currPath, repoPath);
-
-// console.log("WORKS!");
-
-// console.log((new Date()).toISOString().slice(0, 19).replace("T", " "));
-
- // create manifest file 
-//  var created = false;
-//  var x = glob.sync(currPath + "\\" + ".man-*.rc");
-//  while (!created)
-//  if (x.length == 0)
-//     {
-//       fs.openSync(currPath + "\\" + ".man-1.rc", 'w')
-//     console.log("need to create!");
-//     console.log("now created! " + x);
-//     }
-
-//   else
-//    { 
-    //  console.log(x);
-//    }
-
-    
-
-//// testing ignoring dot files
-//console.log(getFiles('C:\\Users\\HP\\Documents\\DGOAT WEBSITE'));
-
-

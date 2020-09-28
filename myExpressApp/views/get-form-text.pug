@@ -2,7 +2,7 @@ extends layout
 
 block content
     h1 Repository Status...
+        p #{output} 
         form(name="output-screen", action="/" method="HEAD")
-            p #{output}
             input(type="submit", name="Submit", value="Done")
     
