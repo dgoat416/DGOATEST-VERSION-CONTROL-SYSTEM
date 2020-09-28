@@ -4,7 +4,6 @@ My own VCS using HTML, Javascript, Node.js with Express <br />
 # CECS 343 VCS Project 1 Section 01
 Team DJ: <br />
 Deron Washington II <br />
-Jose Uriarte <br />
 
 # Introduction:
 Create a repository for the given project source tree (including a
