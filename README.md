@@ -29,7 +29,7 @@ Create a repository for the given project source tree (including a
   <li> Download path: npm install path               </li>
   <li> Download express: npm install express         </li>
   <li> Download fs: npm install fs                   </li>
-  <li> Download fs: npm install glob                 </li>   
+  <li> Download glob: npm install glob               </li>   
 </ul>
   
  # Sample Invocation:
