@@ -36,33 +36,65 @@ app.get('/get-form-text', function(request, response){
   var output_msg = "YOOO";
   var created = false;
 
-    // gives me the current project directory to take snapshot from
-    var currentProjectDir = request.query.currProjectDir;
-  
-    // gives me the directory where the repository will be stored
-    var newRepositoryDir = request.query.newRepoDir;
-  
-    // output our text to the console
-    console.log('app.js received = ' + currentProjectDir + ' for ' + newRepositoryDir);
+  // we can make these jquery action event ---------------------------------------------------------------------
+  // DETERMINE WHICH COMMAND IS BEING EXECUTED
+  // CREATE REPO COMMAND
+  if (request.query.crCurrProjectDir) {
     
-    // PERFORM DATA VALIDATION HERE -----------------------
+      // gives me the current project directory to take snapshot from
+      var currentProjectDir = request.query.crCurrProjectDir;
     
-    // create the repository  
-    created = snapshot(currentProjectDir, newRepositoryDir);
-  
-    if (created == true)
-    {
-      output_msg = 'Your repository has been created or updated from ' + currentProjectDir + ' and stored here:'
-       + newRepositoryDir;
-    }
-    else
-      output_msg = "The repository couldn't be created. This is most likely because it already exists at this repo.";
-  
-    console.log(output_msg);
+      // gives me the directory where the repository will be stored
+      var newRepositoryDir = request.query.crNewRepoDir;
+    
+      // output our text to the console
+      console.log('app.js received = ' + currentProjectDir + ' for ' + newRepositoryDir);
+      
+      // PERFORM DATA VALIDATION HERE -----------------------
+      
+      // create the repository  
+      created = snapshot(currentProjectDir, newRepositoryDir);
+    
+      if (created == true)
+      {
+        output_msg = 'Your repository has been created or updated from ' + currentProjectDir + ' and stored here:'
+        + newRepositoryDir;
+      }
+      else
+        output_msg = "The repository couldn't be created. This is most likely because it already exists at this repo.";
+    
+      console.log(output_msg);
 
-  response.render('get-form-text', {
-  output: output_msg
-});
+      response.render('get-form-text', {
+        output: output_msg
+      });
+  }
+
+  
+  // LABEL COMMAND
+  else if(request.query.clSourceProjectDir)
+  {
+    console.log("I'm here because you clicked the second submit button");
+    // console.log(labelCommand("DGOATEST", "C:\\Users\\HP\\Documents\\Repos\\TestRepo", ".man-1.rc"));
+
+    // get the new label from the user
+    var newLabel = request.query.clNewLabelName;
+
+    // get the old manifest/label from the user
+    var oldLabel = request.query.clOldManifestName;
+
+    var sourceDir = request.query.clSourceProjectDir;
+
+    // DATA VALIDATION WOULD GO HERE ----------------------------------------------------------
+
+    //-----------------------------------------------------------------------------------------
+
+    console.log(labelCommand(newLabel, sourceDir, oldLabel));
+    // console.log(labelCommand("DGOATEST", "C:\\Users\\HP\\Documents\\Repos\\TestRepo", ".man-1"));
+
+  }
+
+  // 
 
 });
 
@@ -71,7 +103,7 @@ app.get('/get-form-text', function(request, response){
 app.listen(3000, function (req, res) 
 { 
   console.log('app.js listening on port 3000!');
-}); // https://discord.com/channels/738205874929270815/738205874929270818/756227895478845556 
+});  
 
 
 
@@ -327,3 +359,218 @@ function populateManifest(source, dest, allFiles, manifestPath)
           }
   } 
 }
+
+// /**
+//  * Method to associate a label with a manifest file to help the user rename a snapshot
+//  * @param {string} newLabel new label name to associate with the snapshot (only alphanumeric characters)
+//  * @param {pathLike} source VCS repository directory 
+//  * @param {string} existingName target manifest's filename or existing label
+//  *                              already associated with manifest
+//  * @return true if the label is added to an existing manifest file
+//  */
+// function labelCommand(newLabel, source, existingName){
+//   // 1. search for the existing name
+//   // 2. if we don't find it then we return a message (error) FRILL
+//   //    if we do find the file then we can add the label to the back of the manifest file in the format "_newLabel"
+
+//    // directory doesn't exist?
+//    if (!fs.existsSync(source))
+//       {
+//         console.log("The directory doesn't exist");
+//         return false;
+//       }
+
+//   // replace invalid characters FRILL(display output message to the user/prompt for more input if newLabel is ever empty)
+//   var newLabel = newLabel.replace(/[^a-z0-9]/gi,'');
+
+//   // open the source up and get all the manifest files (if no manifest file return a message - error FRILL)
+//   var files = glob.sync(path.join(source, '.man-*.rc'));
+
+//   // get only the file names 
+//   files.forEach(function(file, i, files){
+//     files[i] = path.relative(source, file);
+//   });
+
+//   // FRILL - error message
+//   if (files.length === 0)
+//   {
+//     console.log("This is not a VCS. There is no .man file");
+//     return false;
+//   }
+  
+//   // for each file split the name by '_' character (Place everything in a hashmap with the key being
+//   // the manifest file name (or we could store this info in a database) FRILL
+//   for(var i = 0; i < files.length; i++) 
+//   {
+//     // original file name
+//     files[i] = files[i].replace(".rc", '');
+
+//     // split each file by '_' to get all the corresponding labels
+//     let labels = files[i].split("_");
+
+//     for (var j = 0; j < labels.length; j++) 
+//     {
+//       if ( labels[j] === existingName) 
+//       {
+//         // found it so add the new label and rename the file
+//           let newFileName = files[i] + "_" + newLabel + ".rc";
+//           fs.renameSync(path.join(source, files[i] + ".rc"), path.join(source, newFileName));          
+//           return true;
+//       }
+//     }    
+
+//   }
+    
+//   return false;
+// }
+
+/**
+ * Method to associate a label with a manifest file to help the user rename a snapshot
+ * @param {string} newLabel new label name to associate with the snapshot (only alphanumeric characters)
+ * @param {pathLike} source VCS repository directory 
+ * @param {string} existingName target manifest's filename or existing label
+ *                              already associated with manifest
+ * @return true if the label is added to an existing manifest file
+ */
+function labelCommand(newLabel, source, existingName){
+  // 1. search for the existing name
+  // 2. if we don't find it then we return a message (error) FRILL
+  //    if we do find the file then we can add the label to the back of the manifest file in the format "_newLabel"
+
+  var allFilesAndAliases = listFiles(source);
+  
+  // replace invalid characters FRILL(display output message to the user/prompt for more input if newLabel is ever empty)
+  var newLabel = newLabel.replace(/[^a-z0-9]/gi,'');
+
+  // search the list of files and aliases for the existingName of the file
+  for (var i = 0; i < allFilesAndAliases.length; i++) {
+      var labels = allFilesAndAliases[i];
+        for (var j = 0; j < labels.length; j++) 
+        {
+          if ( labels[j] === existingName) 
+          {
+            // found it so add the new label 
+              let newFileName = allFilesAndAliases[i].join('_') + "_" + newLabel + ".rc";
+              
+              // add new label to the manifest file name
+              fs.renameSync(path.join(source, allFilesAndAliases[i].join('_') + ".rc"),
+                 path.join(source, newFileName));          
+              return true;
+          }
+        } 
+    }   
+
+    
+  return false;
+}
+
+/**
+ * Method to get a list of all the files and aliases in a Version Control System directory
+ * (we can tell if it is in a VCS directory based off if we can find a manifest file or not)
+ * @param {pathLike} source VCS repository directory
+ * 
+ * @return the list of all files and aliases names in a 2d array format 
+ *        (rows correspond to different manifest files and columns correspond to labels)
+ *        OTHERWISE it returns FALSE
+ */
+function listFiles(source)
+{
+    // directory doesn't exist?
+    if (!fs.existsSync(source))
+    {
+      console.log("The directory doesn't exist");
+      return false;
+    }
+    // open the source up and get all the manifest files (if no manifest file return a message - error FRILL)
+    var files = glob.sync(path.join(source, '.man-*.rc'));
+
+    // get only the file names 
+    files.forEach(function(file, i, files){
+    files[i] = path.relative(source, file);
+    });
+
+    // FRILL - error message
+    if (files.length === 0)
+    {
+    console.log("This is not a VCS. There is no .man file");
+    return false;
+    }
+
+    var allFilesAndAliases = [];
+
+    // for each file split the name by '_' character (Place everything in a hashmap with the key being
+    // the manifest file name (or we could store this info in a database) FRILL
+    for(var i = 0; i < files.length; i++) 
+    {
+      // original file name
+      files[i] = files[i].replace(".rc", '');
+
+      // split each file by '_' to get all the corresponding labels
+      let labels = files[i].split("_");
+
+      allFilesAndAliases.push(labels);
+    }
+
+    return allFilesAndAliases;
+}
+
+/**
+ * Method to perform a Github-clone of a VCS project directory that maintains the project
+ * structure from when the repo was originally checked-in/created
+ * (this is specified by the manifest file)
+ * @param {*} existingName = target manifest's filename (which specifies the version or snapshot number)
+ *                           or an existing label already associated with the manifest
+ * @param {*} source = VCS project directory to clone
+ * @param {*} dest = empty target directory to store the repository at
+ */
+function checkOut(existingName, source, dest)
+{
+  /* This is the plan:
+  * Read the manifest file and start with keeping track of the initial repo source (first directory of first line)
+  * Then from there skip down to the files and for each file till we reach EOF:
+  * 1. Grab the file that corresponds to the manifest file and then everything after the @ symbol is the directory 
+  *    in terms of the initial repo source that we kept track of already (stored it in a variable)
+  * 2. Join the initial repo source with the directory after the @ symbol
+  * 3. Store the file in the directory (minus the last file name in the directory after the @ symbol) and rename to 
+  *    the file to the file name in the directory (last one)
+  */
+}
+
+/**
+ * Method to update the repository with a new snapshot of a project tree
+ * (only copy the files that have been changed since the last check in/creation)
+ * (we will know if a file is the same or not based on if it's artID has changed or not)
+ * This will result in the creation of a check in manifest file which will use a copy
+ * of the old manifest file but will update the command at the top, update the date
+ * and the artIds of the files that have been changed
+ * @param {pathLike} repoDir = VCS directory
+ * @param {pathLike} workingDir = working directory of the project represented by the VCS
+ */
+function checkIn(repoDir, workingDir)
+{
+  /*
+  * This is the plan:
+  * 1. Copy the code from the snapshot method and after you get all the files compare manifest files
+  *    the ones that don't have matches for manifest have changed so keep track of the paths to these files
+  * 2. The paths to the files mentioned above are the only lines that we will have to change
+  * 3. Update the date at the top, the command, and the directories
+  */
+}
+
+// QUESTION ON THE CHECK IN COMMAND:
+// - Do we update the paths at the top of the check in manifest as well
+//   do we just use the same manifest as previously but just add/update the files that have been added or 
+//   edited, update the date and the paths at the top
+// - Is the name of the manifest file still in the same format?
+
+
+// testing the label command
+// console.log(labelCommand("DGOATEST", "C:\\Users\\HP\\Documents\\Repos\\TEAMDJ", "DGOAT"));
+console.log(labelCommandY("DGOATEST123456", "C:\\Users\\HP\\Documents\\Repos\\TestRepo", ".man-1"));
+console.log(list("C:\\Users\\HP\\Documents\\Repos\\TestRepo")); 
+// $()
+
+// file names for practice:
+//.man-1_DGOAT_GREAT_ME
+//.man-2_LOVE_JOY_PEACE_PATIENCE_KINDNESS_GENTLENESS_FAITHFULNESS_SELFCONTROL
+//.man-3_CHICKFILA_CANES_ALLAT_CSULB_MYAPARTMENT_YERRRRRR

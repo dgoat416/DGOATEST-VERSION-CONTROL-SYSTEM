@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <!-- <link rel="shortcut icon" href="favicon.ico" type="image/ico"> -->
+    <!-- <link rel="stylesheet" href="./style.css"> -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  </head>
+  <body>
+    <h1>TEAM DJ VERSION CONTROL SYSTEM V1.0.0</h1>
+    <p>Click on the button corresponding to the command you want to execute</p>
+    <form name="input-screen" action="/get-form-text" method="GET">
+      <radio> 
+        <input type="radio" name="radioBtn" id="createRepo" value="" checked>CREATE REPOSITORY FOR   
+        <input type="text" name="crCurrProjectDir" value="" checked>  STORE   
+        <input type="text" name="crNewRepoDir" value="" checked>     
+        <input type="submit" name="crSubmit" onclick = 'this.form.submit();'value="Submit"><br><br>
+        <input type="radio" name="radioBtn"  id = "createLabel" value="">CREATE LABEL FOR A SNAPSHOT IN  
+        <input type="text" name="clSourceProjectDir" value="(this source repository)">  AND ASSOCIATE  
+        <input type="text" name="clNewLabelName" value="(new label name)">  WITH  
+        <input type="text" name="clOldManifestName" value="(old manifest or label name)">  
+        <input type="submit" name="clSubmit" onclick = 'this.form.submit();' value="Submit">
+      </radio><br><br>
+    </form><br>
+    <hr>
+    <footer>
+      <p>Copyright &copy, 2020</p>
+    </footer>
+  </body>
+</html>

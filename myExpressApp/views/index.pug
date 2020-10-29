@@ -1,28 +1,29 @@
-//- extends layout
 
-//- block content
-//-   h1 Project 1: Create A Repo
-//-   h4 Semester: Fall 2020
-//-   //- p Welcome to #{title}
-
-//-   form action="/get_form_text" method= "GET"
 extends layout
 
 block content
   h1 #{title}
-  //- Img:srcset= "C:\\Users\\HP\\Pictures\\DGOAT LOGO.png"
   p Click on the button corresponding to the command you want to execute
   form(name="input-screen", action="/get-form-text" method="GET")
     radio 
-      input(type="radio", name="command_filter", value="", checked=true, required=true)
+      input(type="radio", name="radioBtn", value="", checked=true, required=false)
       | CREATE REPOSITORY FOR   
-      input(type="text", name="currProjectDir", value="", checked=true, required=true)
+      input(type="text", name="crCurrProjectDir", value="", checked=true, required=false)
       |   STORE   
-      input(type="text", name="newRepoDir", value="", checked=true, required=true) 
+      input(type="text", name="crNewRepoDir", value="", checked=true, required=false) 
+      br
+      br   
+      input(type="radio", name="radioBtn", value="", checked = false, required=false)
+      | CREATE LABEL FOR A SNAPSHOT IN  
+      input(type="text", name="clSourceProjectDir", value="(this source repository)", check=false, required=false)
+      |   AND ASSOCIATE  
+      input(type="text", name="clNewLabelName", value="(new label name)", check= false, required= false)
+      |   WITH  
+      input(type="text", name="clOldManifestName", value="(old manifest or label name)", check= false, required= false)
+      br
+      br
       |      
-      input(type="submit", name="submit", value="Submit")
+      input(type="submit", name="crSubmit", value="Submit")
+      
 
-  //- ul
-  //-   each article, i in articles
-  //-     li= article.title
   
