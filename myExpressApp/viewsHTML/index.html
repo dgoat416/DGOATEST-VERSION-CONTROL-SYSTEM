@@ -10,13 +10,23 @@
         background-color: lightblue;
       }
       input {
-        /* background-color: lightblue; */
         background-color: lightgray;
+      }
+      #logo {
+        float: left;
+        margin: 15px; 
+        height: 60px;
+        width: auto; 
+        border-radius: 50%; 
+        text-align: center;
       }
     </style>
   </head>
   <body>
-    <h1>TEAM DJ VERSION CONTROL SYSTEM V1.0.0</h1>
+    <div style= "display:inline-block">
+    <a href="#"><img id="logo" src="favicon.ico"></a>
+    <h1 style = "float: left; text-align: center;" >TEAM DJ VERSION CONTROL SYSTEM V1.0.0</h1>
+  </div>
     <p>Click on the button corresponding to the command you want to execute</p>
     <form name="input-screen" action="/get-form-text" method="GET">
       <radio> 
@@ -29,7 +39,12 @@
         <input type="text" name="clNewLabelName" value="(new label name)">  WITH  
         <input type="text" name="clOldManifestName" value="(old manifest or label name)">  
         <br><br>
-        <input type="submit" name="clSubmit" onclick = 'this.form.submit();' value="Submit">
+        <input type="submit" id= "submitBtn" name="clSubmit"  value="Submit">
+        <script>
+          $("#submitBtn").on('click', function(){
+            console.log("WHAT IT DO BAYBEEEE!");
+          });
+        </script>
       </radio><br><br>
     </form><br>
     <hr>

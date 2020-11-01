@@ -2,8 +2,13 @@
 extends layout
 
 block content
-  h1 #{title}
+  <!-- this is places the icon and title on the home page -->
+  div(style='display:inline-block')
+    img(style='float: left; text-align: center;' id = 'logo' src='favicon.ico')
+    h1(style='float: left; text-align: center;') #{title}
   p Click on the button corresponding to the command you want to execute
+
+  <!-- this defines the form on the home page where input is stored on the UI to process on the backend -->
   form(name="input-screen", action="/get-form-text" method="GET")
     radio 
       input(type="radio", name="radioBtn", value="", checked=true, required=false)

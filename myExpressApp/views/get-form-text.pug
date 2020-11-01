@@ -3,6 +3,6 @@ extends layout
 block content
     h1 Repository Status...
         p #{output} 
-        form(name="output-screen", action="/" method="HEAD")
+        form(name="output-screen", action="/" method="POST")
             input(type="submit", name="Submit", value="Done")
     
