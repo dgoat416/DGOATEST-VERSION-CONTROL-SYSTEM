@@ -140,10 +140,23 @@ app.get('/get-form-text', function(request, response){
     var listDir = request.query.listLabelsDir;
    
    
-    var aliases_ = listFiles(listDir);
+    var aliases = listFiles(listDir);
 
-    response.render('index', {
-      aliases: aliases_[0]
+    // console.log(aliases);
+
+
+    var output_msg = "";
+
+    for (var i = 0; i < aliases.length; i++)
+      {
+        for (var j = 0; j < aliases[i].length; j++)
+        {
+          output_msg += aliases[i][j] + "\n ";
+        }
+      }
+
+    response.render('get-form-text', {
+      output: output_msg
     });
   }
 
@@ -155,7 +168,7 @@ app.get('/get-form-text', function(request, response){
     var src = request.query.chkSrcDir;
     var dest = request.query.chkDestDir;
 
-    checkOut(ename, src, dest);
+    checkOut(eName, src, dest);
 
     var output_msg = `You successfully cloned ${src} to ${dest}`;
     response.render('get-form-text', {
@@ -173,7 +186,7 @@ app.get('/get-form-text', function(request, response){
 
     checkIn(inSrc, inDest, label);
 
-    var output_msg = `You successfully checked in ${inSrc} to ${inDest} and associated label ${chkInLabel}`;
+    var output_msg = `You successfully checked in ${inSrc} to ${inDest} and associated label ${label}`;
     response.render('get-form-text', {
       output: output_msg
     });

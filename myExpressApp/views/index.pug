@@ -32,14 +32,14 @@ block content
       |   LIST MANIFEST FILES ASSOCIATED WITH 
       input(type="text", name="listLabelsDir", value="", checked=true, required=false)
       |
-      script.   
-        aliases = ${aliases};
-        console.log($aliases);
+      //- script.   
+      //-   aliases = ${aliases};
+      //-   console.log($aliases);
 
-        for (var i = 0; i < aliases.length; i++)
-          {
-            $("<select id= i> aliases[i]</select>").appendTo("#form");
-          }
+      //-   for (var i = 0; i < aliases.length; i++)
+      //-     {
+      //-       $("<select id= i> aliases[i]</select>").appendTo("#form");
+      //-     }
         //- select(name='dropDown', id='')
         //-   each val in ${aliases}
         //-     option=val
@@ -59,9 +59,9 @@ block content
       br
       |
       input(type="radio", name="radioBtn", value="", checked = false, required=false) 
-      | CHECKIN
+      | CHECKIN FROM SOURCE DIRECTORY:  
       input(type="text", name="chkInSrcDir", value="", checked=true, required=false)
-      | FROM SOURCE DIRECTORY: 
+      | TO DESTINATION DIRECTORY: 
       input(type="text", name="chkInDestDir", value="", checked=true, required=false)
       | ASSOCIATE A LABEL:
       input(type="text", name="chkInLabel", value="", checked=true, required=false)

@@ -10,7 +10,7 @@ Create a repository for the given project source tree (including a
 
 # Contents:
 <ul> 
- <li> CECS343P1_WBS.pdf </li>
+ <li> CECS343P2_WBS.pdf </li>
  <li> get-form-text.pug </li>
  <li> index.pug         </li>
  <li> layout.pug        </li>
