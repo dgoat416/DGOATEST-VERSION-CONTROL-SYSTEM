@@ -61,7 +61,7 @@ app.get('/get-form-text', function(request, response){
   // we can make these jquery action event ---------------------------------------------------------------------
   // DETERMINE WHICH COMMAND IS BEING EXECUTED
   // CREATE REPO COMMAND
-  if (request.query.crCurrProjectDir) {
+  if (request.query.crCurrProjectDir != "") {
     
       // gives me the current project directory to take snapshot from
       var currentProjectDir = request.query.crCurrProjectDir;
@@ -94,7 +94,7 @@ app.get('/get-form-text', function(request, response){
 
   
   // LABEL COMMAND
-  else if(request.query.clSourceProjectDir)
+  else if(request.query.clSourceProjectDir != "(this source repository)")
   {
     console.log("I'm here because you clicked the second submit button");
     // console.log(labelCommand("DGOATEST", "C:\\Users\\HP\\Documents\\Repos\\TestRepo", ".man-1.rc"));
@@ -112,14 +112,75 @@ app.get('/get-form-text', function(request, response){
     //-----------------------------------------------------------------------------------------
 
     // associate label with the manifest
-    
+    created = labelCommand(newLabel, sourceDir, oldLabel);
+
+    if (created == true)
+    {
+      output_msg = `Your label has been created. ${newLabel} 
+                    can now be used to reference ${oldLabel}`;
+    }
+    else
+      output_msg = `Your label ${newLabel} can't be associated
+                    with ${oldLabel}`;
+  
+    console.log(output_msg);
+
+    response.render('get-form-text', {
+      output: output_msg
+    });
 
     // console.log(labelCommand(newLabel, sourceDir, oldLabel));
     // console.log(labelCommand("DGOATEST", "C:\\Users\\HP\\Documents\\Repos\\TestRepo", ".man-1"));
 
   }
 
-  // 
+  // LIST COMMAND
+  else if (request.query.listLabelsDir != "")
+  {
+    var listDir = request.query.listLabelsDir;
+   
+   
+    var aliases_ = listFiles(listDir);
+
+    response.render('index', {
+      aliases: aliases_[0]
+    });
+  }
+
+
+  // CHECKOUT COMMAND
+  else if (request.query.manCheckoutName != "")
+  {
+    var eName = request.query.manCheckoutName;
+    var src = request.query.chkSrcDir;
+    var dest = request.query.chkDestDir;
+
+    checkOut(ename, src, dest);
+
+    var output_msg = `You successfully cloned ${src} to ${dest}`;
+    response.render('get-form-text', {
+      output: output_msg
+    });
+
+  }
+
+  // CHECKIN COMMAND
+  else if (request.query.chkInSrcDir != "")
+  {
+    var inSrc = request.query.chkInSrcDir;
+    var inDest = request.query.chkInDestDir;
+    var label = request.query.chkInLabel;
+
+    checkIn(inSrc, inDest, label);
+
+    var output_msg = `You successfully checked in ${inSrc} to ${inDest} and associated label ${chkInLabel}`;
+    response.render('get-form-text', {
+      output: output_msg
+    });
+
+  }
+
+
 
 });
 

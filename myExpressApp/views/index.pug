@@ -9,7 +9,7 @@ block content
   p Click on the button corresponding to the command you want to execute
 
   <!-- this defines the form on the home page where input is stored on the UI to process on the backend -->
-  form(name="input-screen", action="/get-form-text" method="GET")
+  form#form(name="input-screen", action="/get-form-text" method="GET")
     radio 
       input(type="radio", name="radioBtn", value="", checked=true, required=false)
       | CREATE REPOSITORY FOR   
@@ -27,7 +27,46 @@ block content
       input(type="text", name="clOldManifestName", value="(old manifest or label name)", check= false, required= false)
       br
       br
-      |      
+      |     
+      input(type="radio", name="radioBtn", value="", checked = false, required=false) 
+      |   LIST MANIFEST FILES ASSOCIATED WITH 
+      input(type="text", name="listLabelsDir", value="", checked=true, required=false)
+      |
+      script.   
+        aliases = ${aliases};
+        console.log($aliases);
+
+        for (var i = 0; i < aliases.length; i++)
+          {
+            $("<select id= i> aliases[i]</select>").appendTo("#form");
+          }
+        //- select(name='dropDown', id='')
+        //-   each val in ${aliases}
+        //-     option=val
+      br
+      br
+      |
+      input(type="radio", name="radioBtn", value="", checked = false, required=false) 
+      | CHECKOUT
+      input(type="text", name="manCheckoutName", value="", checked=true, required=false)
+      | FROM SOURCE DIRECTORY: 
+      input(type="text", name="chkSrcDir", value="", checked=true, required=false)
+      | TO THIS DIRECTORY:
+      input(type="text", name="chkDestDir", value="", checked=true, required=false)
+      br
+      br
+      br
+      br
+      |
+      input(type="radio", name="radioBtn", value="", checked = false, required=false) 
+      | CHECKIN
+      input(type="text", name="chkInSrcDir", value="", checked=true, required=false)
+      | FROM SOURCE DIRECTORY: 
+      input(type="text", name="chkInDestDir", value="", checked=true, required=false)
+      | ASSOCIATE A LABEL:
+      input(type="text", name="chkInLabel", value="", checked=true, required=false)
+      br
+      br
       input(type="submit", name="crSubmit", value="Submit")
       
 
