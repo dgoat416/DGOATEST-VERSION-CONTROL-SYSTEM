@@ -44,8 +44,6 @@ block content
       input(type="text", name="chkDestDir", value="", checked=true, required=false)
       br
       br
-      br
-      br
       |
       input(type="radio", name="radioBtn", value="", checked = false, required=false) 
       | CHECKIN FROM SOURCE DIRECTORY:  
@@ -54,6 +52,20 @@ block content
       input(type="text", name="chkInDestDir", value="", checked=true, required=false)
       | ASSOCIATE A LABEL:
       input(type="text", name="chkInLabel", value="", checked=true, required=false)
+      br
+      br
+      |
+      input(type="radio", name="radioBtn", value="", checked = false, required=false) 
+      | MERGE OUT FROM SOURCE DIRECTORY:  
+      input(type="text", name="mergeOutSrcDir", value="", checked=true, required=false)
+      | TO TARGET DIRECTORY: 
+      input(type="text", name="mergeOutTgtDir", value="", checked=true, required=false)
+      br
+      br
+      |
+      input(type="radio", name="radioBtn", value="", checked = false, required=false) 
+      | MERGE IN TO TARGET DIRECTORY:  
+      input(type="text", name="mergeInSrcDir", value="", checked=true, required=false)
       br
       br
       input(type="submit", name="crSubmit", value="Submit")
