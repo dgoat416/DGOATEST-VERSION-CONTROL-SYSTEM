@@ -15,7 +15,7 @@ const glob = require('glob');
 var favicon = require('serve-favicon')
 var $ = require('jquery');
 var jsdom = require('jsdom');
-const { domain } = require('process');
+const { domain, exit } = require('process');
 const { JSDOM } = jsdom;
 const { window } = new JSDOM();
 const { document } = (new JSDOM('')).window;
@@ -192,6 +192,9 @@ app.get('/get-form-text', function(request, response){
     });
 
   }
+
+  // // MERGE-IN COMMAND
+  // else if (request.query)
 
 
 
@@ -509,6 +512,11 @@ function populateManifest(source, dest, allFiles, manifestPath, command)
               fs.appendFileSync(manifestPath, dest_file[0] + dest_file[1] + " @ " + path.relative(source, allFiles[j]) + "\n");
               j++;
             }
+            else if (command == "merge-in" || command == "merge-out") {
+              let dest_file = calcArtID(source, allFiles[j]);
+              fs.appendFileSync(manifestPath, dest_file + " @ " + path.relative(source, allFiles[j]) + "\n");
+              j++;
+            }
 
 
           }
@@ -765,18 +773,18 @@ function checkIn(workingDir, repoDir, newLabel = "")
   var dirFiles = fs.readdirSync(path.join(repoDir), 'utf-8');
 
    // list of full path strings in working dir
-   var wdFilePaths = getFiles(workingDir);
+  var wdFilePaths = getFiles(workingDir);
  
-   // create a hashmap to store the files and the filepaths
-  var hmFileNames = new Map();
-
-  // create a hashmap with filenames (artIDs) as keys and full path as values 
-  for (var i = 0; i < wdFilePaths.length; i++) {
-    let artID = calcArtID(workingDir, wdFilePaths[i]);
-    hmFileNames.set(artID, wdFilePaths[i]);        
-  }
-
+ 
+   // create a hashmap to store the files and the filepaths for working directory
+   var hmFileNames = new Map();
   
+   // create a hashmap with filenames (artIDs) as keys and full path as values for working directory
+   for (var i = 0; i < wdFilePaths.length; i++) {
+     let artID = calcArtID(workingDir, wdFilePaths[i]);
+     hmFileNames.set(artID[0], path.relative(workingDir, wdFilePaths[i]));        
+    }
+    
   // grab all the artIDs from the repository
   var artIDs = [];
   for (var i = 0; i < dirFiles.length; i++)
@@ -793,30 +801,421 @@ function checkIn(workingDir, repoDir, newLabel = "")
   for (let [key,val] of hmFileNames)
   {
     // updated file?
-    if(artIDs.includes(key[0]) == false)
+    if(artIDs.includes(key) == false)
     {
       fs.copyFileSync(val, path.join(repoDir, key[0] + key[1]));
     }
   }
 
+
+  //   // create a hashmap to store the files and the filepaths for repository
+  //   var hmFileNamesRepo = new Map();
+    
+  //   // grab all the artIDs from the repository
+  //   for (var i = 0; i < dirFiles.length; i++)
+  //   {
+  //     if (dirFiles[i][0] != ".") {   
+  //       let tempFile = dirFiles[i];
+  //       let endIndex = dirFiles[i].indexOf(".");
+  //       hmFileNamesRepo.set([tempFile.substring(0, endIndex), tempFile.substring(endIndex)],
+  //                             path.join(repoDir, tempFile));
+  //     }
+  //   }  
+
+  // // check if there is an updated file if there is then copy it to the repo (CASE 1)
+  // // artIDs (from repoDir) check if the workingDir has a file that has been updated
+  // // or is brand new (source has a file that isn't in the repo yet)
+  // for (let [key,val] of hmFileNames)
+  // {
+  //   // updated/new file?
+  //   if(hmFileNamesRepo.has(key) == false)
+  //   {
+  //     // add to repo
+  //     fs.copyFileSync(val, path.join(repoDir, key[0] + key[1]));
+
+  //     // add to artIDs (which I changed to a map) so add to map
+  //     hmFileNamesRepo.set(key, path.join(repoDir, key[0] + key[1]));
+  //   }
+  // }
+
+  // // check if there is a file in the repo (tgt) that is updated/new and is not in the
+  // // working directory (source) file if there is then copy it to the working directory (CASE 2)
+  // for (let [key,val] of hmFileNamesRepo)
+  // {
+  //   // updated/new file?
+  //   if(hmFileNames.has(key) == false)
+  //   {
+  //     // add to working directory
+  //     fs.copyFileSync(val, path.join(workingDir, key[0], key[1]));
+
+  //     // add to artIDs (which I changed to a map) so add to map
+  //     hmFileNames.set(key, path.join(workingDir, key[0], key[1]));
+  //   }
+  // }
+
  
    // create manifest file based on how many we already have
-   newLabel = newLabel != "" ? "_" + newLabel : newLabel;
-   var manifestNum = glob.sync(path.join(repoDir, '.man-*.rc')).length + 1;
-   var manifestFileName = `.man-${manifestNum}${newLabel}.rc`; 
-   var manifestPath = path.join(repoDir, manifestFileName);
+  //  newLabel = newLabel != "" ? "_" + newLabel : newLabel;
+  //  var manifestNum = glob.sync(path.join(repoDir, '.man-*.rc')).length + 1;
+  //  var manifestFileName = `.man-${manifestNum}${newLabel}.rc`; 
+  //  var manifestPath = path.join(repoDir, manifestFileName);
      
-   // populate manifest file  
-   populateManifest(workingDir, repoDir, wdFilePaths, manifestPath, "checkin"); 
+  //  // populate manifest file  
+  // populateManifest(workingDir, repoDir, wdFilePaths, manifestPath, "checkin"); 
+  
+  // return [ {[artID, fileExt] => fullPath}, {[artID, fileExt] => fullPath} ]
+  // in the form [workingDir map , repoDir map]
+  // return [hmFileNames, hmFileNamesRepo];
+  return hmFileNames;
 }
 
-// QUESTION ON THE CHECK IN COMMAND:
-// - Do we update the paths at the top of the check in manifest as well
-//   do we just use the same manifest as previously but just add/update the files that have been added or 
-//   edited, update the date and the paths at the top
-// - Is the name of the manifest file still in the same format?
+/**
+ * Method to perform the merge of two files
+ * STEPS:
+ * 1. 
+ * @param {pathLike} src 
+ * @param {pathLike} tgt
+ */
+function merge(src, tgt)
+{
+  mergeOut(src, tgt);
+
+  mergeIn();
+}
+
+/**
+ * Method to perform the merge in operation 
+ */
+function mergeIn()
+{
+
+}
+
+/**
+ * Method to get the oldest manifest in the directory
+ * and return the command & the path to proceed
+ * with the process of trying to find grandma
+ * @param {PathLike} dir a directory to check is grandma
+ * @return a list object of the form: [command, path to check next]
+ */
+function findConnectedComponent(dir)
+{
+  // get the repo directory to check in source into 
+  var manifestFiles = glob.sync(path.join(dir, '.man-*.rc'));
+  var file = manifestFiles[0];
+
+  // read the oldest manifest file
+  var manContents = fs.readFileSync(path.join(file), 'utf-8');
+  var arr = manContents.split('\n');
+
+  // find the last index of C:/ to find the destination of the check in
+  var command = arr[0].substring(0, arr[0].indexOf(" "));
+  var index;
+  var checkInDest;
+  
+  // use source from command line of manifest file 
+  if (command == "checkout") {
+    index = arr[0].indexOf("C:\\");
+    checkInDest = arr[0].substring(index, arr[0].indexOf(" ", index)).trim();
+  }
+  // use destination from command line of manifest file
+  else if (command == "checkin" || command == "create") {
+    index = arr[0].lastIndexOf("C:\\");
+    checkInDest = arr[0].substring(index).trim();
+  }
+
+  else
+  {
+    console.log("HOUSTON WE HAVE A PROBLEM!! LISTS MANIFEST METHOD. COMMAND OF MANIFEST DOESN'T MATCH POSSIBLITIES.");
+    exit(-1);
+  }
+
+  return [command, checkInDest]; 
+}
+
+/**
+ * Method to find the commmon grandma ancestor 
+ * between both params
+ * @param {PathLike} src the source repo
+ * @param {PathLike} tgt the target repo
+ * @return the path of the common grandma ancestor
+ */
+function findCommonGrandmaAncestor(src, tgt)
+{
+  // create two lists that hold the paths of the connected component ancestors of each directory
+  // then compare the lists and the first one that matches is grandma so return it
+  var srcList = [];
+  var srcDone = false;
+  var tgtList = [];
+  var tgtDone = false;
+  var srcCC;
+  var tgtCC;
+
+  do
+  {
+    // find connected components of the source path
+    if (srcDone == false)
+    {
+      srcCC = findConnectedComponent(src);
+      srcDone = srcCC[0] == "create" ? true : false;
+      srcList.add(srcCC[1]);
+    }
+
+    // find connected components of the target path
+    if (tgtDone == false)
+    {
+      tgtCC = findConnectedComponent(tgt);
+      tgtDone = tgtCC[0] == "create" ? true : false;
+      tgtList.add(tgtCC[1]);
+    }
+    
+  } while (srcDone == false || tgtDone == false);
 
 
+  // compare each list starting after the first index which will always be the create
+  var min = srcList < tgtList ? srcList : tgtList;
+  for (var i = 1; i < min; i++)
+  {
+    // found grandma?
+    if (srcList[i] == tgtList[i])
+      return srcList[i].trim();      
+  }
+
+  // didn't find a grandma so return the create repo path
+  return src[0].trim();
+}
+
+/**
+ * Method to perform the 4 cases of file-file checking
+ * to complete the merge operation
+ * @param {Map} min  map object with the smallest size
+ * @param {Map} max map object with the largest size
+ * @param {PathLike} src source repo dir
+ * @param {PathLike} tgt target repo dir
+ * @param {boolean} isMinSrc boolean variable to tell us if source is the min or max is
+ */
+function fileCaseChecking(min, max, src, tgt, isMinSrc)
+{
+
+  if (isMinSrc == true)
+  {
+    var minEntries = min.entries();
+    var maxEntries = max.entries();
+    var minEntry = minEntries.next();
+    var maxEntry = maxEntries.next().value;
+    do
+    {
+      let isDone = minEntry.done;
+      let minKey = minEntry.value[0]
+      let minVal = minEntry.value[1];
+
+      let maxKey = maxEntry[0];
+      let maxVal = maxEntry[1];
+
+      // CASE 1 src has a file that is not in target (src file < tgt file)
+      if (minVal.localeCompare(maxVal) == -1)
+      {
+        // add a file to the target directory
+        fs.copyFileSync(path.join(src, minVal), path.join(tgt, minVal));
+
+        // increment target
+        maxEntry = maxEntries.next().value;
+      }
+  
+      // CASE 2 tgt has a file that is not in src (src file > tgt file)
+      else if (minVal.localeCompare(maxVal) == 1)
+      {
+        // increment target
+        maxEntry = maxEntries.next().value;       
+      }
+
+  
+      // CASE 3 (src file == tgt file && src file id == tgt file id)
+      else if (minVal.localeCompare(maxVal) == 0 && minKey.localeCompare(maxKey) == 0)
+      {
+        // increment both
+        minEntry = minEntries.next().value;
+        maxEntry = maxEntries.next().value;
+      }
+  
+      // CASE 4 (src file == tgt file && src file != tgt file id)
+      else 
+      {
+        // rename the tgt file
+        let fileNameSplit = maxVal.split(".");
+        fs.renameSync(path.join(tgt, maxVal), path.join(tgt, fileNameSplit[0] + "_MT" + fileNameSplit[1]));
+
+        // copy the src file to tgt
+        fileNameSplit = minVal.split(".");
+        fs.copyFileSync(path.join(src, minVal), path.join(tgt, fileNameSplit[0] + "_MR" + fileNameSplit[1]));
+
+        // find grandma ancestor
+        let gmaPath = findCommonGrandmaAncestor(src, tgt);  
+        fs.copyFileSync(path.join(gmaPath, fileName[0] + fileName[1]), path.join(tgt, fileNameSplit[0] + "_MG" + fileNameSplit[1]));
+
+        // increment both
+        minEntry = minEntries.next().value;
+        maxEntry = maxEntries.next().value;
+      }
+
+    } while (isDone == false);
+  }
+
+  else if (isMinSrc == false)
+  {
+    var minEntries = min.entries();
+    var maxEntries = max.entries();
+    var minEntry = minEntries.next();
+    var maxEntry = maxEntries.next().value;
+    do
+    {
+      let isDone = minEntry.done;
+      let minKey = minEntry.value[0]
+      let minVal = minEntry.value[1];
+
+      let maxKey = maxEntry[0];
+      let maxVal = maxEntry[1];
+
+      // CASE 1 src has a file that is not in tgt (src file < tgt file)
+      if (minVal.localeCompare(maxVal) == 1)
+      { 
+        // add a file to the target directory
+        fs.copyFileSync(path.join(src, minVal), path.join(src, minVal));
+
+        // increment source
+        maxEntry = maxEntries.next().value;
+      }
+
+      // CASE 2 tgt has a file that is not in source (tgt file < src file)
+      else if (minVal.localeCompare(maxVal) == -1)
+      {
+         // increment source
+         maxEntry = maxEntries.next().value;
+      }
+
+      // CASE 3 (src file == tgt file && src file id == tgt file id)
+      else if (minVal.localeCompare(maxVal) == 0 && minKey.localeCompare(maxKey) == 0)
+      {
+        // increment both
+        minEntry = minEntries.next().value;
+        maxEntry = maxEntries.next().value;
+      }
+  
+      // CASE 4 (src file == tgt file && src file != tgt file id)
+      else 
+      {
+        // rename the tgt file
+        let fileNameSplit = minVal.split(".");
+        fs.renameSync(path.join(tgt, minVal), path.join(tgt, fileNameSplit[0] + "_MT" + fileNameSplit[1]));
+
+        // copy the src file to tgt
+        fileNameSplit = maxVal.split(".");
+        fs.copyFileSync(path.join(src, maxVal), path.join(tgt, fileNameSplit[0] + "_MR" + fileNameSplit[1]));
+
+        // find grandma ancestor
+        let gmaPath = findCommonGrandmaAncestor(src, tgt);  
+        fs.copyFileSync(path.join(gmaPath, fileName[0] + fileName[1]), path.join(tgt, fileNameSplit[0] + "_MG" + fileNameSplit[1]));
+
+        // increment both
+        minEntry = minEntries.next().value;
+        maxEntry = maxEntries.next().value;
+      }
+
+    } while (isDone == false);
+  }
+
+}
+
+/**
+ * Method to perform the merge out operation
+ * @param src source repository snapshot
+ * @param tgt exist target repository project tree to merge into source
+ */
+function mergeOut(src, tgt)
+{
+  // get the repo directory to check in source into 
+  var manifestFiles = glob.sync(path.join(src, '.man-*.rc'));
+  var file = manifestFiles[manifestFiles.length - 1];
+
+  // read the most up to date manifest file
+  var manContents = fs.readFileSync(path.join(file), 'utf-8');
+  var arr = manContents.split('\n');
+
+  // find the last index of C:/ to find the destination of the check in
+  var command = arr[0].substring(0, arr[0].indexOf(" "));
+  var index;
+  var checkInDest;
+  
+  // use source from manifest file 
+  if (command == "checkout")
+  {
+    index = arr[0].indexOf("C:\\");
+    checkInDest = arr[0].substring(index, arr[0].indexOf(" ", index));
+  }
+  
+  // use destination from manifest file
+  else
+  {
+    index = arr[0].lastIndexOf("C:\\");
+    checkInDest = arr[0].substring(index);
+  }
+  
+  // perform a check in to be safe
+  // src file map :  {artID => fullPath}
+  var srcFileMap = checkIn(src, checkInDest);   
+  
+  // for each file in the snapshot do the
+  // file to file case checking (4 cases)  
+  
+  // get all files from the latest tgt manifest 
+  manifestFiles = glob.sync(path.join(tgt, '.man-*.rc'));
+  file = manifestFiles[manifestFiles.length - 1];
+  
+  // read the most up to date manifest file of tgt
+  manContents = fs.readFileSync(path.join(file), 'utf-8');
+  arr = manContents.split('\n');
+  
+  // for every line in this tgt manifest create a file map
+  // in the form {artID => fullPath}
+  var tgtFileMap = new Map();
+  for (var i = 2; i < arr.length; i++)
+  {
+    let oneLine = arr[i].trim().split("@");
+    if (oneLine[1] == undefined)
+        continue;
+    tgtFileMap.set(oneLine[0].split(".")[0].trim(), oneLine[1].trim());
+  }
+
+  // both files are already sorted because windows does that automatically (NO FRILLS)
+  var min;
+  var max;
+  var isMinSrc = false;
+  if (srcFileMap.size < tgtFileMap.size)
+  {
+    max = tgtFileMap;
+    min = srcFileMap;
+    isMinSrc = true;
+  }
+  else
+  {
+    max = srcFileMap;
+    min = tgtFileMap;
+  }   
+    
+  fileCaseChecking(min, max, isMinSrc);
+
+  // create manifest file based on how many we already have
+  var manifestNum = glob.sync(path.join(tgt, '.man-*.rc')).length + 1;
+  var manifestFileName = `.man-${manifestNum}.rc`; 
+  var manifestPath = path.join(tgt, manifestFileName);
+  var srcFilePaths = Array.from(srcFileMap.values());
+
+
+  // populate manifest file  
+  populateManifest(src, tgt, srcFilePaths, manifestPath, "merge-out");   
+}
+
+// mergeOut("C:\\Users\\HP\\Documents\\Repos\\TestRepoCheckout", "C:\\Users\\HP\\Documents\\Repos\\TestRepo");
 // testing the label command
 // console.log(labelCommand("DGOATEST", "C:\\Users\\HP\\Documents\\Repos\\TEAMDJ", "DGOAT"));
 // console.log(listFiles("C:\\Users\\HP\\Documents\\Repos\\TestRepo")); 
